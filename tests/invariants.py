@@ -18,7 +18,7 @@ from pathlib import Path
 # Ensure src is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from chrysalis import Chrysalis, Constraint, Layer, Observation
+from chrysalis import Chrysalis, Constraint, Layer, Observation, Trajectory
 
 
 # === INVARIANT 1: The system can be instantiated ===
@@ -249,6 +249,56 @@ def test_self_cycle() -> None:
     assert obs is not None
     assert obs.result is not None  # found a dict from generated domain
     assert isinstance(obs.result, dict)
+
+
+# === INVARIANT 15: Iterated self-evolution completes ===
+# (The system can compound its own growth across multiple cycles)
+
+def test_iterated_evolution() -> None:
+    """The system can run iterated self-evolution across multiple steps."""
+    c = Chrysalis()
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+    c.cycle(domain=[None, {"x": 1}])  # seed with experience
+
+    trajectory = c.evolve(steps=3)
+    assert isinstance(trajectory, Trajectory)
+    assert len(trajectory.observations) == 3
+    assert len(trajectory.reflections) == 3
+    assert len(trajectory.domain_sizes) == 3
+    assert all(ds > 0 for ds in trajectory.domain_sizes)
+
+
+# === INVARIANT 16: Fixed-point detection works ===
+# (Axiom 4 — The system can see its own evolutionary asymptote)
+
+def test_fixed_point_detection() -> None:
+    """The system detects when it converges to a repeating state."""
+    c = Chrysalis()
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+    c.declare("has_x", lambda s: isinstance(s, dict) and "x" in s, source="test")
+    c.cycle(domain=[None, {"x": 1}])  # seed — tight constraints, one survivor
+
+    # With tight constraints and no ambiguity, it should converge
+    trajectory = c.evolve(steps=3)
+    assert trajectory.fixed_point is True
+    assert trajectory.fixed_at is not None
+    assert trajectory.fixed_at > 0  # can't be fixed on step 0
+
+
+# === INVARIANT 17: Trajectory describes itself ===
+# (Axiom 3 recursed — self-observation of the evolution arc)
+
+def test_trajectory_self_description() -> None:
+    """Trajectories produce self-descriptions (Axiom 3 applied to evolution)."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.cycle(domain=[None, {"a": 1}])
+
+    trajectory = c.evolve(steps=2)
+    desc = trajectory.describe()
+    required_keys = {"steps", "domain_sizes", "results", "reflections_generated", "fixed_point", "fixed_at"}
+    assert required_keys.issubset(desc.keys())
+    assert desc["steps"] == 2
 
 
 # === RUNNER ===

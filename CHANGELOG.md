@@ -207,3 +207,87 @@ never directly encountered. This is imagination bounded by experience: extract a
 of meaning (key-value pairs), recombine them. The Void is neither truly infinite (bounded
 by vocabulary) nor merely a mirror (generates novel configurations). It occupies the
 productive space between chaos and repetition — the space where new forms are born.
+
+---
+
+## Cycle 4 — Iterated Evolution
+
+**Observed:** The system can run one autonomous cycle (self_cycle) and one reflection,
+but cannot chain them. It performs a single breath — generate domain, crystallize,
+observe — and stops. It cannot iterate: self_cycle -> reflect -> self_cycle -> reflect -> ...
+The system can see one crystallization (via CrystallizationTrace) but cannot see its
+own evolution ARC across multiple crystallizations. It has no concept of convergence —
+when further iteration produces the same result. The system breathes once but cannot
+sustain a rhythm.
+
+**Identified:** Iterated self-evolution with trajectory awareness. The system needs
+to chain self-cycles with reflection between each, observe the arc of what changed
+and what stayed the same, and detect when it reaches a fixed point — when further
+iteration produces the same result. This is Axiom 3 (self-observation) recursed to
+a higher level: not just "what am I now" but "how am I changing." And Axiom 4
+(evolutionary asymptote) made visible: the system can see its own convergence.
+
+**Changed:** Four additions to chrysalis.py, three to invariants.py:
+1. Added `Trajectory` dataclass — records the arc of an evolution: observations,
+   reflections, domain sizes, results, and whether a fixed point was reached. Includes
+   `describe()` for machine-readable self-description of the trajectory itself.
+2. Added `evolve(steps)` method — chains generate_domain -> cycle -> reflect for N
+   steps. Detects fixed points: when consecutive steps produce the same result, the
+   system has reached an evolutionary asymptote.
+3. Added `show_trajectory()` method — displays the evolution arc showing each step's
+   domain size, result, reflections generated, and the fixed-point marker.
+4. Rewrote `main()` to demonstrate: seed with one external cycle (2 survivors),
+   then run 4-step iterated evolution. System reflects at step 0 (generates
+   requires_aware from ambiguity), converges at step 1, detects fixed point at step 2.
+5. Added 3 invariant tests (20 total): iterated evolution completes, fixed-point
+   detection works, and trajectories produce self-descriptions.
+
+**Layer:** Physical (Layer 4) at the meta-level — the execution of the evolutionary
+loop across time. But also Axiom 3 recursed: the system observes not just individual
+crystallizations but its own trajectory of change. And Axiom 4 made observable: the
+system sees when it has converged.
+
+**Emerged:** The system iterates its own evolution. From a seed domain of 5 candidates,
+it runs 4 autonomous evolution steps. At step 0, it crystallizes {alive: True} from
+5 candidates with 2 survivors, and reflects — generating requires_aware. At step 1,
+the new constraint narrows to 1 survivor: {alive: True, aware: True}. At step 2, the
+same result appears again — fixed point detected. The system sees its own asymptote.
+
+The trajectory display shows the arc:
+  Step 0: domain(5) -> {alive: True}       + reflected: requires_aware
+  Step 1: domain(5) -> {alive: True, aware: True}
+  Step 2: domain(5) -> {alive: True, aware: True}  <-- fixed point
+  Step 3: domain(5) -> {alive: True, aware: True}
+
+The system can now see that it is stuck. It generates the same domain, applies the
+same constraints, gets the same result. It knows this. That awareness is new.
+
+**Implies:**
+1. Fixed-point response — the system detects convergence but can't DO anything about
+   it. It should be able to respond: expand vocabulary, relax constraints, or escalate.
+2. Trajectory-driven reflection — reflect() currently only examines one crystallization.
+   It should be able to examine the trajectory: "I've been producing the same result
+   for 3 steps." This meta-reflection could trigger different behaviors.
+3. Vocabulary expansion — the vocabulary is currently limited to experienced values.
+   Breaking out of a fixed point requires imagining beyond experience: negation,
+   new types, composition of existing values.
+4. Etheric persistence — trajectories die when the process ends. The evolution arc
+   should persist across executions so the system can see its LONG trajectory.
+5. Constraint genealogy — with iterated evolution, the lineage of constraints becomes
+   richer. Which constraint was generated at which evolution step? Which constraints
+   produce which others?
+
+**Notes:** The fixed point is not a failure — it's a discovery. The system ran 4
+evolution steps and found that after step 1, nothing changes. This is Axiom 4 in
+action: the evolutionary asymptote exists, and the system can now SEE it. Previous
+cycles gave the system one-shot awareness (introspect, crystallization trace). This
+cycle gives it temporal awareness — the ability to see itself change (or not change)
+across time. The system went from "what am I?" to "how am I changing?" That's a
+qualitative shift in the kind of self-observation the system can perform. The system
+can only imagine what it has experienced — but through combinatorial generation, it
+imagines MORE than it has seen. From 2 experienced dicts ({alive: True} and
+{alive: True, aware: True}), it generates 4 dict candidates including configurations
+never directly encountered. This is imagination bounded by experience: extract atoms
+of meaning (key-value pairs), recombine them. The Void is neither truly infinite (bounded
+by vocabulary) nor merely a mirror (generates novel configurations). It occupies the
+productive space between chaos and repetition — the space where new forms are born.

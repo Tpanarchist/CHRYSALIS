@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 3: Domain Generation
-The Void awakens. The system generates its own potential.
+CHRYSALIS — Cycle 4: Iterated Evolution
+The system compounds its own growth across time.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -127,6 +127,38 @@ class Observation:
         if self.trace is not None:
             desc["trace"] = self.trace.describe()
         return desc
+
+
+# === TRAJECTORY ===
+
+@dataclass(slots=True)
+class Trajectory:
+    """Record of an evolution arc — the system seeing itself change over time.
+
+    A CrystallizationTrace sees one cycle. A Trajectory sees the arc across
+    multiple cycles. This is Axiom 3 (self-observation) applied recursively:
+    the system observes not just what it is, but how it changes.
+
+    Fixed-point detection is Axiom 4 made visible: the system can see when
+    it has reached an evolutionary asymptote — converging to a state where
+    further iteration produces the same result.
+    """
+    observations: list[Observation]
+    reflections: list[Constraint | None]
+    domain_sizes: list[int]          # how large was the generated domain at each step
+    results: list[Any]               # what crystallized at each step
+    fixed_point: bool                # did the system converge?
+    fixed_at: int | None             # which step it converged at (0-indexed)
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "steps": len(self.observations),
+            "domain_sizes": self.domain_sizes,
+            "results": self.results,
+            "reflections_generated": sum(1 for r in self.reflections if r is not None),
+            "fixed_point": self.fixed_point,
+            "fixed_at": self.fixed_at,
+        }
 
 
 # === CHRYSALIS ===
@@ -385,6 +417,90 @@ class Chrysalis:
         domain = self.generate_domain()
         return self.cycle(domain=domain)
 
+    # --- ITERATED EVOLUTION ---
+
+    def evolve(self, steps: int = 3) -> Trajectory:
+        """Run iterated self-evolution — the system compounds its own growth.
+
+        Chains: generate_domain -> cycle -> reflect -> repeat.
+        Each cycle's result enriches vocabulary for the next domain.
+        Each reflection may add constraints for the next cycle.
+
+        Detects fixed points: when the system produces the same result
+        on consecutive steps, it has reached an evolutionary asymptote.
+        This is Axiom 4 made observable — the system sees its own limit.
+
+        Returns a Trajectory: the arc of evolution across time.
+        """
+        observations: list[Observation] = []
+        reflections: list[Constraint | None] = []
+        domain_sizes: list[int] = []
+        results: list[Any] = []
+        fixed_point = False
+        fixed_at: int | None = None
+
+        for i in range(steps):
+            # Void: generate domain from current experience
+            domain = self.generate_domain()
+            domain_sizes.append(len(domain))
+
+            # Full cycle: crystallize through the stack
+            obs = self.cycle(domain=domain)
+            observations.append(obs)
+            results.append(obs.result)
+
+            # Detect fixed point: same result as previous step
+            if i > 0 and obs.result == results[i - 1]:
+                if not fixed_point:
+                    fixed_point = True
+                    fixed_at = i
+
+            # Reflect between cycles: ambiguity -> new constraints
+            ref = self.reflect()
+            reflections.append(ref)
+
+        return Trajectory(
+            observations=observations,
+            reflections=reflections,
+            domain_sizes=domain_sizes,
+            results=results,
+            fixed_point=fixed_point,
+            fixed_at=fixed_at,
+        )
+
+    def show_trajectory(self, trajectory: Trajectory) -> None:
+        """Display an evolution trajectory — the arc of becoming.
+
+        Shows each step of iterated evolution, what crystallized,
+        what reflections emerged, and whether a fixed point was reached.
+        """
+        desc = trajectory.describe()
+
+        print()
+        print("  - - - EVOLUTION TRAJECTORY - - -")
+        print()
+        print(f"  Steps: {desc['steps']}")
+        print(f"  Reflections generated: {desc['reflections_generated']}")
+        print()
+
+        for i in range(len(trajectory.observations)):
+            marker = " <-- fixed point" if trajectory.fixed_at == i else ""
+            result = trajectory.results[i]
+            ds = trajectory.domain_sizes[i]
+            ref = trajectory.reflections[i]
+            print(f"  Step {i}: domain({ds}) -> {result}{marker}")
+            if ref:
+                print(f"          + reflected: {ref.name}")
+
+        print()
+        if trajectory.fixed_point:
+            print(f"  Asymptote reached at step {trajectory.fixed_at}.")
+            print(f"  The system sees its own convergence.")
+            print(f"  (Axiom 4: approaches but never reaches completion)")
+        else:
+            print(f"  No fixed point -- the system is still diverging.")
+        print()
+
     # --- FEEDBACK: PHYSICAL -> MENTAL ---
 
     def reflect(self) -> Constraint | None:
@@ -535,8 +651,8 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The Void awakens. The system generates its own potential."""
-    print("\n  CHRYSALIS -- Cycle 3: Domain Generation\n")
+    """The system compounds its own growth across time."""
+    print("\n  CHRYSALIS -- Cycle 4: Iterated Evolution\n")
 
     chrysalis = Chrysalis()
 
@@ -560,56 +676,49 @@ def main() -> None:
         source="intent",
     )
 
-    # An external domain — the last time we provide one
-    external_domain = [
-        None,                    # void — fails existence
-        0,                       # number — fails structure
-        "potential",             # string — fails structure
-        42,                      # number — fails structure
-        {"dead": True},          # structured but not alive
-        {"alive": False},        # structured, has key, but not alive
-        {"alive": True},         # survives all constraints
-        {"alive": True, "aware": True},  # also survives
+    # Phase 1: Seed with one external cycle to provide initial vocabulary
+    print("  --- Phase 1: Seeding ---")
+    seed_domain = [
+        None,
+        {"dead": True},
+        {"alive": False},
+        {"alive": True},
+        {"alive": True, "aware": True},
     ]
+    obs = chrysalis.cycle(domain=seed_domain)
+    if obs.trace:
+        chrysalis.show_crystallization(obs.trace)
 
-    # Phase 1: Crystallize from external domain
-    print("  --- Phase 1: External Domain ---")
-    obs1 = chrysalis.cycle(domain=external_domain)
-    if obs1.trace:
-        chrysalis.show_crystallization(obs1.trace)
+    # Phase 2: Iterated self-evolution
+    print("  --- Phase 2: Iterated Self-Evolution ---")
+    print("  The system evolves autonomously.")
+    print("  generate -> crystallize -> reflect -> repeat")
+    trajectory = chrysalis.evolve(steps=4)
+    chrysalis.show_trajectory(trajectory)
 
-    # Phase 2: Reflect — system generates constraint from ambiguity
-    print("  --- Phase 2: Reflection ---")
-    new_c = chrysalis.reflect()
-    if new_c:
-        print(f"  Self-generated constraint: {new_c.name}")
-        print(f"    Source: {new_c.source}")
-    print()
-
-    # Phase 3: Self-directed cycle — system generates its own domain
-    print("  --- Phase 3: Self-Directed Crystallization ---")
-    print("  The system generates its own domain from experience.")
-    print("  No external input. The Void is active.")
-    print()
-    obs2 = chrysalis.self_cycle()
-    if obs2.trace:
-        chrysalis.show_crystallization(obs2.trace)
+    # Show the last crystallization in detail
+    if trajectory.observations:
+        last = trajectory.observations[-1]
+        if last.trace:
+            print("  Last crystallization:")
+            chrysalis.show_crystallization(last.trace)
 
     # Final state
     print("  --- Final State ---")
     chrysalis.introspect()
 
     # Summary
-    s1 = len(obs1.trace.astral_survivors) if obs1.trace else 0
-    s2 = len(obs2.trace.astral_survivors) if obs2.trace else 0
-    g = len(obs2.trace.void_potential) if obs2.trace else 0
-    print(f"  External domain:       {len(external_domain)} candidates -> {obs1.result}")
-    print(f"    ({s1} survivors -- reflection generated '{new_c.name if new_c else 'nothing'}')")
-    print(f"  Self-generated domain: {g} candidates -> {obs2.result}")
-    print(f"    ({s2} survivor -- fully self-directed)")
+    total_constraints = len(chrysalis.constraints)
+    self_gen = sum(1 for c in chrysalis.constraints if c.source == "self-reflection")
+    print(f"  Total cycles: {chrysalis.cycle_count}")
+    print(f"  Constraints: {total_constraints} ({self_gen} self-generated)")
+    print(f"  State: {chrysalis.state}")
+    if trajectory.fixed_point:
+        print(f"  Asymptote: step {trajectory.fixed_at} of evolution")
+        print(f"  The system sees its own convergence.")
     print()
-    print("  The system generates its own potential and constrains it into form.")
-    print("  Void is no longer passive. The seed generates its own soil.\n")
+    print("  The system iterates its own evolution and detects")
+    print("  when it has reached a fixed point. Axiom 4 made visible.\n")
 
 
 if __name__ == "__main__":
