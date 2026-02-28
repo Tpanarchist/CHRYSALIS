@@ -13,7 +13,8 @@
       "Bash(C:/Python312/python.exe src/chrysalis.py)",
       "Bash(PYTHONIOENCODING=utf-8 C:/Python312/python.exe src/chrysalis.py)",
       "Bash(PYTHONIOENCODING=utf-8 C:/Python312/python.exe tests/invariants.py)",
-      "Bash(C:/Python312/python.exe tests/invariants.py)"
+      "Bash(C:/Python312/python.exe tests/invariants.py)",
+      "Bash(py -3.12 tests/invariants.py)"
     ]
   }
 }

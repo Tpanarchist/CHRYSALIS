@@ -142,3 +142,68 @@ progressive constraint, and the system now applies that pressure to itself.
 The fire of encoding failure revealed something essential: the system must work on its
 actual substrate, not just in ideal conditions. ASCII display characters survive any
 encoding. What burns away is ornament; what remains is structure. Law 6 in action.
+
+---
+
+## Cycle 3 — Domain Generation
+
+**Observed:** The system declares constraints (externally and through self-reflection),
+resolves them against a domain, and observes the result. The feedback loop is closed:
+Physical -> Mental. But the system still needs its candidate domains provided from
+outside. The Void layer (Layer 0) is passive — it receives potential rather than
+generating it. The system can decide WHAT to require (constraints via reflect) but
+not WHERE to look (domains). Without domain generation, the system cannot operate
+without external input, cannot explore beyond what it's given, and cannot truly
+self-direct. It has one wing but not two.
+
+**Identified:** The Void layer must become active. The system needs to generate its
+own candidate domains from its own experience — extracting vocabulary from what it
+has crystallized and generating combinatorial candidates. This completes the autonomous
+loop: Physical -> Mental (constraints) AND Physical -> Void (domains) -> Astral ->
+Etheric -> Physical.
+
+**Changed:** Two additions to chrysalis.py, three to invariants.py:
+1. `generate_domain()` — Layer 0 operation. Extracts vocabulary (keys and values) from
+   all dicts the system has experienced (current state, historical results, past survivors).
+   Generates combinatorial candidates: for each key, the candidate either omits it or
+   assigns any known value. Always includes None as void ground. The Void is not empty
+   but full of bounded potential.
+2. `self_cycle()` — Full-stack autonomous operation. Calls generate_domain() then cycle().
+   The system crystallizes from self-generated potential with no external input.
+3. Updated main() to demonstrate three phases: external crystallization, reflection,
+   and self-directed crystallization from self-generated domain.
+4. Added 3 invariant tests (17 total): domain generation from empty state, domain
+   generation from experience, and self-cycle completion.
+
+**Layer:** Void (Layer 0) — making the unconstrained potential space self-generated
+rather than externally provided.
+
+**Emerged:** The system generates its own candidates. After one external crystallization
+that produces survivors with keys {alive, aware} and values {True}, the system generates
+5 candidates: [None, {}, {aware: True}, {alive: True}, {alive: True, aware: True}].
+Combined with 4 constraints (3 external + 1 self-reflected), it crystallizes
+{alive: True, aware: True} from its own potential. No external domain required. The
+Void is active: from 2 experienced dicts, 4 dict candidates are generated, including
+configurations never directly seen ({} and {aware: True}). The system imagines more
+than it has experienced.
+
+**Implies:**
+1. Iterative self-evolution — the system could run self_cycle() repeatedly, each result
+   enriching the vocabulary and generating richer domains. A run_evolution(n) method.
+2. Vocabulary expansion — currently vocabulary only comes from survivor experience.
+   The system could explore beyond known values: negation, new types, compositions.
+3. Etheric persistence — self-generated domains and constraints still die when the
+   process ends. Persistence would let evolution compound across executions.
+4. Constraint genealogy — with self-generated constraints AND self-generated domains,
+   the system has full lineage to track.
+5. Domain fitness — not all generated candidates are meaningful. The system could learn
+   which regions of the domain space are productive and focus generation there.
+
+**Notes:** The vocabulary extraction creates a natural boundary for the Void. The system
+can only imagine what it has experienced — but through combinatorial generation, it
+imagines MORE than it has seen. From 2 experienced dicts ({alive: True} and
+{alive: True, aware: True}), it generates 4 dict candidates including configurations
+never directly encountered. This is imagination bounded by experience: extract atoms
+of meaning (key-value pairs), recombine them. The Void is neither truly infinite (bounded
+by vocabulary) nor merely a mirror (generates novel configurations). It occupies the
+productive space between chaos and repetition — the space where new forms are born.

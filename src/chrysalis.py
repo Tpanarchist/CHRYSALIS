@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 2: The Feedback Loop
-The system observes its crystallization and constrains itself.
+CHRYSALIS — Cycle 3: Domain Generation
+The Void awakens. The system generates its own potential.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -145,6 +145,69 @@ class Chrysalis:
         self.history: list[Observation] = []
         self.cycle_count: int = 0
         self._birth = datetime.now(timezone.utc).isoformat()
+
+    # --- Layer 0: VOID — Domain Generation ---
+
+    def generate_domain(self) -> list[Any]:
+        """Generate a domain of candidates from the system's own experience.
+
+        The Void layer becomes active. Instead of receiving candidates from
+        outside, the system populates its own possibility space from what
+        it has crystallized. The vocabulary of keys and values is extracted
+        from experienced states, and combinatorial candidates are generated
+        exploring every configuration.
+
+        The Void is not empty but full of potential — bounded by experience.
+        The system can only imagine what it has encountered, but through
+        recombination it imagines configurations never seen before.
+        """
+        # Gather all dicts the system has directly experienced
+        experienced: list[dict[str, Any]] = []
+        if isinstance(self.state, dict):
+            experienced.append(self.state)
+        for obs in self.history:
+            if isinstance(obs.result, dict):
+                experienced.append(obs.result)
+            if obs.trace:
+                for survivor in obs.trace.astral_survivors:
+                    if isinstance(survivor, dict):
+                        experienced.append(survivor)
+
+        if not experienced:
+            # No experience yet — minimal void potential
+            return [None, {}]
+
+        # Extract vocabulary: keys and their known values
+        vocab: dict[str, list[Any]] = {}
+        for d in experienced:
+            for k, v in d.items():
+                if k not in vocab:
+                    vocab[k] = []
+                if v not in vocab[k]:
+                    vocab[k].append(v)
+
+        # Generate all combinations: each key is absent or takes any known value
+        candidates: list[dict[str, Any]] = [{}]
+        for key in sorted(vocab):
+            expanded: list[dict[str, Any]] = []
+            for candidate in candidates:
+                expanded.append(dict(candidate))  # key absent
+                for val in vocab[key]:
+                    ext = dict(candidate)
+                    ext[key] = val
+                    expanded.append(ext)  # key present with this value
+            candidates = expanded
+
+        # Deduplicate preserving order
+        unique: list[dict[str, Any]] = []
+        for c in candidates:
+            if c not in unique:
+                unique.append(c)
+
+        # The formless always exists as ground potential
+        domain: list[Any] = [None]
+        domain.extend(unique)
+        return domain
 
     # --- Layer 1: MENTAL — Declaration ---
 
@@ -309,6 +372,19 @@ class Chrysalis:
         print(f"  [PHYSICAL] Result: {_repr(trace.physical_result)}")
         print()
 
+    # --- FULL AUTONOMY: Self-Directed Cycle ---
+
+    def self_cycle(self) -> Observation:
+        """Execute a fully self-directed crystallization cycle.
+
+        The system generates its own domain from experience, then
+        crystallizes through its constraints. No external input needed.
+        This is the Void layer actively participating in the cycle:
+        Physical -> Mental -> Void -> Astral -> Etheric -> Physical.
+        """
+        domain = self.generate_domain()
+        return self.cycle(domain=domain)
+
     # --- FEEDBACK: PHYSICAL -> MENTAL ---
 
     def reflect(self) -> Constraint | None:
@@ -459,12 +535,12 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The feedback loop closes. The system reflects and constrains itself."""
-    print("\n  CHRYSALIS -- Cycle 2: The Feedback Loop\n")
+    """The Void awakens. The system generates its own potential."""
+    print("\n  CHRYSALIS -- Cycle 3: Domain Generation\n")
 
     chrysalis = Chrysalis()
 
-    # Three constraints that progressively narrow: existence, structure, life
+    # External constraints — the initial declarations
     chrysalis.declare(
         name="existence",
         test=lambda s: s is not None,
@@ -484,8 +560,8 @@ def main() -> None:
         source="intent",
     )
 
-    # A domain with diverse candidates — most will be eliminated
-    domain = [
+    # An external domain — the last time we provide one
+    external_domain = [
         None,                    # void — fails existence
         0,                       # number — fails structure
         "potential",             # string — fails structure
@@ -496,51 +572,44 @@ def main() -> None:
         {"alive": True, "aware": True},  # also survives
     ]
 
-    # The system sees itself before acting
-    print("  --- Before Crystallization ---")
-    chrysalis.introspect()
-
-    # First crystallization: potential -> form through progressive constraint
-    print("  --- First Crystallization ---")
-    obs1 = chrysalis.cycle(domain=domain)
+    # Phase 1: Crystallize from external domain
+    print("  --- Phase 1: External Domain ---")
+    obs1 = chrysalis.cycle(domain=external_domain)
     if obs1.trace:
         chrysalis.show_crystallization(obs1.trace)
 
-    # THE FEEDBACK LOOP: The system reflects on what it crystallized
-    # It notices ambiguity (2 survivors) and generates its own constraint
-    print("  --- Reflection ---")
-    new_constraint = chrysalis.reflect()
-    if new_constraint:
-        print(f"  The system observed ambiguity and declared:")
-        print(f"    [{new_constraint.layer.value:8s}] {new_constraint.name}")
-        print(f"    Source: {new_constraint.source}")
-        print(f"    This constraint was not externally given.")
-        print(f"    The system generated it from its own observation.")
-    else:
-        print("  No ambiguity detected. System is fully constrained.")
+    # Phase 2: Reflect — system generates constraint from ambiguity
+    print("  --- Phase 2: Reflection ---")
+    new_c = chrysalis.reflect()
+    if new_c:
+        print(f"  Self-generated constraint: {new_c.name}")
+        print(f"    Source: {new_c.source}")
     print()
 
-    # Second crystallization: now with the self-generated constraint
-    print("  --- Second Crystallization (self-directed) ---")
-    obs2 = chrysalis.cycle(domain=domain)
+    # Phase 3: Self-directed cycle — system generates its own domain
+    print("  --- Phase 3: Self-Directed Crystallization ---")
+    print("  The system generates its own domain from experience.")
+    print("  No external input. The Void is active.")
+    print()
+    obs2 = chrysalis.self_cycle()
     if obs2.trace:
         chrysalis.show_crystallization(obs2.trace)
 
-    # The system sees what it has become
-    print("  --- After Self-Directed Evolution ---")
+    # Final state
+    print("  --- Final State ---")
     chrysalis.introspect()
 
-    # Summary: the feedback loop in action
-    print(f"  First crystallization:  {obs1.result}")
-    survivors_1 = len(obs1.trace.astral_survivors) if obs1.trace else 0
-    print(f"    ({survivors_1} survivors -- ambiguity remained)")
-    print(f"  Reflection generated:   {new_constraint.name if new_constraint else 'nothing'}")
-    print(f"  Second crystallization: {obs2.result}")
-    survivors_2 = len(obs2.trace.astral_survivors) if obs2.trace else 0
-    print(f"    ({survivors_2} survivor -- ambiguity resolved)")
+    # Summary
+    s1 = len(obs1.trace.astral_survivors) if obs1.trace else 0
+    s2 = len(obs2.trace.astral_survivors) if obs2.trace else 0
+    g = len(obs2.trace.void_potential) if obs2.trace else 0
+    print(f"  External domain:       {len(external_domain)} candidates -> {obs1.result}")
+    print(f"    ({s1} survivors -- reflection generated '{new_c.name if new_c else 'nothing'}')")
+    print(f"  Self-generated domain: {g} candidates -> {obs2.result}")
+    print(f"    ({s2} survivor -- fully self-directed)")
     print()
-    print("  The loop is closed: observation -> declaration -> crystallization.")
-    print("  The system directs its own evolution.\n")
+    print("  The system generates its own potential and constrains it into form.")
+    print("  Void is no longer passive. The seed generates its own soil.\n")
 
 
 if __name__ == "__main__":

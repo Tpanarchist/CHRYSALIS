@@ -206,6 +206,51 @@ def test_reflection_returns_none_when_unambiguous() -> None:
     assert len(c.constraints) == 1  # unchanged
 
 
+# === INVARIANT 12: The Void generates potential from nothing ===
+# (Layer 0 — the formless produces minimal candidates before experience)
+
+def test_domain_generation_empty() -> None:
+    """Before experience, the Void generates minimal potential."""
+    c = Chrysalis()
+    domain = c.generate_domain()
+    assert None in domain  # the formless is always present
+    assert {} in domain    # empty structure is always possible
+    assert len(domain) >= 2
+
+
+# === INVARIANT 13: The Void generates from experience ===
+# (Layer 0 — experienced vocabulary populates the possibility space)
+
+def test_domain_generation_from_experience() -> None:
+    """After crystallization, the Void generates from learned vocabulary."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.cycle(domain=[None, {"a": 1}, {"b": 2}])
+
+    domain = c.generate_domain()
+    # Should contain candidates built from keys "a" and "b"
+    assert len(domain) > 2
+    assert any(isinstance(d, dict) and "a" in d for d in domain)
+    assert any(isinstance(d, dict) and "b" in d for d in domain)
+    # Should contain combinations never directly seen
+    assert any(isinstance(d, dict) and "a" in d and "b" in d for d in domain)
+
+
+# === INVARIANT 14: Self-cycle completes without external domain ===
+# (Full autonomy — the system operates on self-generated potential)
+
+def test_self_cycle() -> None:
+    """The system crystallizes from self-generated potential."""
+    c = Chrysalis()
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+    c.cycle(domain=[None, {"x": 1}])  # seed with experience
+
+    obs = c.self_cycle()
+    assert obs is not None
+    assert obs.result is not None  # found a dict from generated domain
+    assert isinstance(obs.result, dict)
+
+
 # === RUNNER ===
 
 def _run_all() -> None:
