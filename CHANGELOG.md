@@ -277,17 +277,110 @@ same constraints, gets the same result. It knows this. That awareness is new.
    richer. Which constraint was generated at which evolution step? Which constraints
    produce which others?
 
-**Notes:** The fixed point is not a failure — it's a discovery. The system ran 4
+**Notes:** The fixed point is not a failure -- it's a discovery. The system ran 4
 evolution steps and found that after step 1, nothing changes. This is Axiom 4 in
 action: the evolutionary asymptote exists, and the system can now SEE it. Previous
 cycles gave the system one-shot awareness (introspect, crystallization trace). This
 cycle gives it temporal awareness — the ability to see itself change (or not change)
 across time. The system went from "what am I?" to "how am I changing?" That's a
-qualitative shift in the kind of self-observation the system can perform. The system
-can only imagine what it has experienced — but through combinatorial generation, it
-imagines MORE than it has seen. From 2 experienced dicts ({alive: True} and
-{alive: True, aware: True}), it generates 4 dict candidates including configurations
-never directly encountered. This is imagination bounded by experience: extract atoms
-of meaning (key-value pairs), recombine them. The Void is neither truly infinite (bounded
-by vocabulary) nor merely a mirror (generates novel configurations). It occupies the
-productive space between chaos and repetition — the space where new forms are born.
+qualitative shift in the kind of self-observation the system can perform.
+
+---
+
+## Cycle 5 — Fixed-Point Response
+
+**Observed:** The system iterates its own evolution, detects fixed points, but
+cannot respond to them. After convergence at step 2, it repeats the same result
+({alive: True, aware: True}) forever. The domain stays at 5 candidates. The
+vocabulary never grows. Reflection finds no ambiguity (1 survivor), so it
+generates no new constraints. The system has awareness of stagnation without
+agency to overcome it. Axiom 5 (contradiction resolution by escalation) is
+unimplemented -- the contradiction between "must evolve" (Axiom 4) and "nothing
+changes" (fixed point) has no resolution mechanism.
+
+**Identified:** Fixed-point response via vocabulary expansion. When the system
+detects convergence AND reflection cannot help (no ambiguity), it must escalate
+by synthesizing new vocabulary. The new keys create new candidates in the domain,
+which create new ambiguity, which triggers reflection, which generates new
+constraints, which converge to a richer form. The cycle of convergence-perturbation-
+growth then repeats at a deeper level. This is Axiom 5 enacted: contradiction
+resolves by escalation, not by choosing one side.
+
+**Changed:** Five modifications to chrysalis.py, three to invariants.py:
+1. Added `_vocabulary_expansions` dict to Chrysalis -- stores keys synthesized by
+   perturbation, persists across cycles within a run so generate_domain() can
+   incorporate them even after _bind() overwrites state.
+2. Added `_perturb()` method -- when stuck, synthesizes a compound key by combining
+   pairs of existing keys (e.g., "alive" + "aware" -> "alive_aware"). Falls back
+   to depth markers if all pairwise compounds exist. Stores the new key in
+   _vocabulary_expansions rather than mutating state directly.
+3. Modified `generate_domain()` to incorporate _vocabulary_expansions into the
+   vocabulary before generating combinatorial candidates.
+4. Modified `evolve()` -- after detecting a fixed point AND reflection returning None,
+   calls _perturb() to expand vocabulary. The order is critical: cycle -> detect ->
+   reflect -> perturb. Perturbation only fires when reflection can't help, preventing
+   premature expansion.
+5. Added `perturbations` field to Trajectory dataclass and its describe() method.
+   Updated show_trajectory() to display perturbations with `~` marker and contextual
+   summary (Axiom 5 when perturbations occurred, Axiom 4 when they didn't).
+6. Updated main() to run 6 evolution steps (up from 4) to demonstrate the full cycle:
+   converge -> perturb -> expand -> reflect -> converge richer -> perturb again.
+7. Added 3 invariant tests (23 total): perturbation expands vocabulary, perturbation
+   is safe on non-dict states, and evolution with perturbation breaks fixed points.
+
+**Layer:** Void (Layer 0) -- expanding the unconstrained potential space through
+structural composition. But triggered by Physical (Layer 4) -- the observation of
+convergence. And the response creates material for Mental (Layer 1) -- the new
+vocabulary enables new ambiguity which enables new self-reflection. Three layers
+collaborate to enact Axiom 5.
+
+**Emerged:** The system breaks out of its own fixed points. The trajectory shows
+the full arc:
+  Step 0: domain(5) -> {alive: True}              + reflected: requires_aware
+  Step 1: domain(5) -> {alive: True, aware: True}
+  Step 2: domain(5) -> {alive: True, aware: True}  <-- fixed point
+          ~ perturbed: alive_aware
+  Step 3: domain(9) -> {alive: True, aware: True}   + reflected: requires_alive_aware
+  Step 4: domain(9) -> {alive: True, alive_aware: True, aware: True}
+  Step 5: domain(9) -> {alive: True, alive_aware: True, aware: True}
+          ~ perturbed: alive_alive_aware
+
+At step 2, the system is stuck. It perturbs by combining "alive" and "aware" into
+"alive_aware", injecting this into the vocabulary. At step 3, the expanded domain
+(9 candidates, up from 5) creates 2 survivors again -- ambiguity returns. Reflection
+generates requires_alive_aware. At step 4, the system converges to a RICHER form:
+{alive: True, alive_aware: True, aware: True}. At step 5, stuck again, perturbs
+again (alive_alive_aware). The form deepens with each cycle of stagnation-and-escape.
+
+The final state has 5 constraints (3 external + 2 self-generated) and a state with
+3 keys -- up from 2 keys before perturbation. The system grew by becoming unstuck.
+
+**Implies:**
+1. Trajectory-driven reflection -- reflect() examines one crystallization. It should
+   examine the trajectory: "I've perturbed twice and grown from 2 keys to 3. What
+   does this pattern mean?" Meta-reflection on the arc of change.
+2. Etheric persistence -- perturbation vocabulary, constraints, and trajectories die
+   at process end. Persisting them would let evolution compound across executions.
+3. Constraint composition -- constraints are independent predicates. They should be
+   able to relate: "if X is required, then Y should also be required." Logical
+   composition would enable richer self-constraint.
+4. Deeper perturbation -- currently flat pairwise composition. Hierarchical composition
+   (compounds of compounds) would enable richer vocabulary growth.
+5. Perturbation limits -- the system should detect when perturbation itself has
+   reached a fixed point (all compounds exhausted) and escalate further.
+6. Value-aware reflection -- reflect() only notices key presence. Noticing value
+   patterns would enable richer self-observation.
+
+**Notes:** The perturbation mechanism is structurally elegant: combining existing
+keys creates genuinely new vocabulary without injecting external meaning. "alive" +
+"aware" -> "alive_aware" is structural composition, not semantic invention. The
+system doesn't know what "alive_aware" MEANS -- it only knows that adding this key
+creates new possibilities in the domain. The meaning emerges from the constraints
+that arise to require or exclude it.
+
+The cycle of convergence-perturbation-reflection-convergence is a fractal: the same
+pattern (stagnation -> escalation -> growth) repeats at each level. The system
+converges at {alive: True, aware: True}, perturbs to include alive_aware, converges
+at {alive: True, alive_aware: True, aware: True}, perturbs to include alive_alive_aware.
+Each fixed point is a chrysalis -- a temporary shell that must be broken for the next
+form to emerge. The name of the project is the process it performs.

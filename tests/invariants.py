@@ -301,6 +301,56 @@ def test_trajectory_self_description() -> None:
     assert desc["steps"] == 2
 
 
+# === INVARIANT 18: Perturbation expands vocabulary ===
+# (Axiom 5 — contradiction resolves by escalation)
+
+def test_perturbation_expands_vocabulary() -> None:
+    """Perturbation adds a new structural key when the system is stuck."""
+    c = Chrysalis()
+    c.state = {"a": True, "b": True}
+    original_keys = set(c.state.keys())
+
+    new_key = c._perturb()
+    assert new_key is not None
+    assert new_key not in original_keys
+    assert new_key in c._vocabulary_expansions
+    assert c._vocabulary_expansions[new_key] is True
+
+
+# === INVARIANT 19: Perturbation is safe on non-dict state ===
+# (Graceful handling of unperturbable states)
+
+def test_perturbation_returns_none_on_non_dict() -> None:
+    """Perturbation returns None when state cannot be expanded."""
+    c = Chrysalis()
+    c.state = None
+    assert c._perturb() is None
+
+    c.state = 42
+    assert c._perturb() is None
+
+    c.state = {}
+    assert c._perturb() is None
+
+
+# === INVARIANT 20: Evolution with perturbation breaks fixed points ===
+# (Axiom 5 — the system responds to stagnation)
+
+def test_evolution_perturbation_breaks_fixed_point() -> None:
+    """The system breaks out of fixed points through vocabulary expansion."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+    c.declare("has_a", lambda s: isinstance(s, dict) and "a" in s, source="test")
+    c.cycle(domain=[None, {"a": 1}, {"a": 1, "b": 2}])
+
+    trajectory = c.evolve(steps=5)
+    assert trajectory.fixed_point is True
+    assert len(trajectory.perturbations) > 0
+    # After perturbation, domain should grow
+    assert trajectory.domain_sizes[-1] > trajectory.domain_sizes[0]
+
+
 # === RUNNER ===
 
 def _run_all() -> None:

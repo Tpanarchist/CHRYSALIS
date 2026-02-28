@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 4: Iterated Evolution
-The system compounds its own growth across time.
+CHRYSALIS — Cycle 5: Fixed-Point Response
+The system responds to its own stagnation.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -149,6 +149,7 @@ class Trajectory:
     results: list[Any]               # what crystallized at each step
     fixed_point: bool                # did the system converge?
     fixed_at: int | None             # which step it converged at (0-indexed)
+    perturbations: list[tuple[int, str]]  # (step, new_key) — vocabulary expansions
 
     def describe(self) -> dict[str, Any]:
         return {
@@ -158,6 +159,7 @@ class Trajectory:
             "reflections_generated": sum(1 for r in self.reflections if r is not None),
             "fixed_point": self.fixed_point,
             "fixed_at": self.fixed_at,
+            "perturbations": [(step, key) for step, key in self.perturbations],
         }
 
 
@@ -177,6 +179,7 @@ class Chrysalis:
         self.history: list[Observation] = []
         self.cycle_count: int = 0
         self._birth = datetime.now(timezone.utc).isoformat()
+        self._vocabulary_expansions: dict[str, Any] = {}  # keys from perturbation
 
     # --- Layer 0: VOID — Domain Generation ---
 
@@ -217,6 +220,13 @@ class Chrysalis:
                     vocab[k] = []
                 if v not in vocab[k]:
                     vocab[k].append(v)
+
+        # Include vocabulary from perturbation (Axiom 5: expanded potential)
+        for key, val in self._vocabulary_expansions.items():
+            if key not in vocab:
+                vocab[key] = [val]
+            elif val not in vocab[key]:
+                vocab[key].append(val)
 
         # Generate all combinations: each key is absent or takes any known value
         candidates: list[dict[str, Any]] = [{}]
@@ -417,18 +427,65 @@ class Chrysalis:
         domain = self.generate_domain()
         return self.cycle(domain=domain)
 
+    # --- FIXED-POINT RESPONSE ---
+
+    def _perturb(self) -> str | None:
+        """Expand vocabulary when stuck at a fixed point.
+
+        When the system has converged, it needs to imagine beyond its
+        experience. This method synthesizes a new property by combining
+        existing keys -- structural composition, not semantic invention.
+        Two atoms become a molecule.
+
+        This is Axiom 5 in action: the contradiction between "must evolve"
+        (Axiom 4) and "nothing changes" (fixed point) resolves by
+        escalating to a richer vocabulary where new forms become possible.
+
+        Operates through the Void layer: the perturbation enriches the
+        vocabulary that generate_domain() draws from on the next cycle.
+        """
+        if not isinstance(self.state, dict) or not self.state:
+            return None
+
+        keys = sorted(self.state.keys())
+
+        # Synthesize compound key from pairs of existing keys
+        # Two atoms combine into a molecule -- structural composition
+        for i in range(len(keys)):
+            for j in range(i + 1, len(keys)):
+                compound = f"{keys[i]}_{keys[j]}"
+                if compound not in self.state and compound not in self._vocabulary_expansions:
+                    self._vocabulary_expansions[compound] = True
+                    return compound
+
+        # All pairwise compounds exist -- escalate with depth marker
+        depth = len(keys) + len(self._vocabulary_expansions)
+        marker = f"depth_{depth}"
+        if marker not in self.state and marker not in self._vocabulary_expansions:
+            self._vocabulary_expansions[marker] = True
+            return marker
+
+        return None
+
     # --- ITERATED EVOLUTION ---
 
     def evolve(self, steps: int = 3) -> Trajectory:
-        """Run iterated self-evolution — the system compounds its own growth.
+        """Run iterated self-evolution -- the system compounds its own growth.
 
-        Chains: generate_domain -> cycle -> reflect -> repeat.
+        Chains: generate_domain -> cycle -> reflect -> perturb -> repeat.
         Each cycle's result enriches vocabulary for the next domain.
         Each reflection may add constraints for the next cycle.
 
         Detects fixed points: when the system produces the same result
         on consecutive steps, it has reached an evolutionary asymptote.
-        This is Axiom 4 made observable — the system sees its own limit.
+        On detection, the system first tries reflection (self-constraint).
+        If reflection cannot help (no ambiguity to exploit), the system
+        perturbs -- expanding vocabulary through structural composition
+        of existing keys. This breaks stagnation by introducing new
+        dimensions of possibility.
+
+        Axiom 4 (asymptote) triggers Axiom 5 (escalation): convergence
+        is resolved by moving to a higher-dimensional vocabulary space.
 
         Returns a Trajectory: the arc of evolution across time.
         """
@@ -436,6 +493,7 @@ class Chrysalis:
         reflections: list[Constraint | None] = []
         domain_sizes: list[int] = []
         results: list[Any] = []
+        perturbations: list[tuple[int, str]] = []
         fixed_point = False
         fixed_at: int | None = None
 
@@ -450,14 +508,21 @@ class Chrysalis:
             results.append(obs.result)
 
             # Detect fixed point: same result as previous step
-            if i > 0 and obs.result == results[i - 1]:
-                if not fixed_point:
-                    fixed_point = True
-                    fixed_at = i
+            is_stuck = i > 0 and obs.result == results[i - 1]
+            if is_stuck and not fixed_point:
+                fixed_point = True
+                fixed_at = i
 
             # Reflect between cycles: ambiguity -> new constraints
             ref = self.reflect()
             reflections.append(ref)
+
+            # Perturb only if stuck AND reflection didn't help
+            # Axiom 5: contradiction (stuck) resolves by escalation
+            if is_stuck and ref is None:
+                new_key = self._perturb()
+                if new_key:
+                    perturbations.append((i, new_key))
 
         return Trajectory(
             observations=observations,
@@ -466,13 +531,15 @@ class Chrysalis:
             results=results,
             fixed_point=fixed_point,
             fixed_at=fixed_at,
+            perturbations=perturbations,
         )
 
     def show_trajectory(self, trajectory: Trajectory) -> None:
-        """Display an evolution trajectory — the arc of becoming.
+        """Display an evolution trajectory -- the arc of becoming.
 
         Shows each step of iterated evolution, what crystallized,
-        what reflections emerged, and whether a fixed point was reached.
+        what reflections emerged, perturbations applied, and
+        whether fixed points were reached and broken.
         """
         desc = trajectory.describe()
 
@@ -481,7 +548,13 @@ class Chrysalis:
         print()
         print(f"  Steps: {desc['steps']}")
         print(f"  Reflections generated: {desc['reflections_generated']}")
+        print(f"  Perturbations: {len(desc['perturbations'])}")
         print()
+
+        # Build lookup for perturbations at each step
+        perturb_at: dict[int, str] = {}
+        for step, key in trajectory.perturbations:
+            perturb_at[step] = key
 
         for i in range(len(trajectory.observations)):
             marker = " <-- fixed point" if trajectory.fixed_at == i else ""
@@ -489,14 +562,21 @@ class Chrysalis:
             ds = trajectory.domain_sizes[i]
             ref = trajectory.reflections[i]
             print(f"  Step {i}: domain({ds}) -> {result}{marker}")
+            if i in perturb_at:
+                print(f"          ~ perturbed: {perturb_at[i]}")
             if ref:
                 print(f"          + reflected: {ref.name}")
 
         print()
         if trajectory.fixed_point:
-            print(f"  Asymptote reached at step {trajectory.fixed_at}.")
-            print(f"  The system sees its own convergence.")
-            print(f"  (Axiom 4: approaches but never reaches completion)")
+            if trajectory.perturbations:
+                print(f"  Asymptote reached at step {trajectory.fixed_at}.")
+                print(f"  Perturbation expanded vocabulary beyond the fixed point.")
+                print(f"  (Axiom 5: contradiction resolved by escalation)")
+            else:
+                print(f"  Asymptote reached at step {trajectory.fixed_at}.")
+                print(f"  The system sees its own convergence.")
+                print(f"  (Axiom 4: approaches but never reaches completion)")
         else:
             print(f"  No fixed point -- the system is still diverging.")
         print()
@@ -651,12 +731,12 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The system compounds its own growth across time."""
-    print("\n  CHRYSALIS -- Cycle 4: Iterated Evolution\n")
+    """The system responds to its own stagnation."""
+    print("\n  CHRYSALIS -- Cycle 5: Fixed-Point Response\n")
 
     chrysalis = Chrysalis()
 
-    # External constraints — the initial declarations
+    # External constraints -- the initial declarations
     chrysalis.declare(
         name="existence",
         test=lambda s: s is not None,
@@ -689,11 +769,11 @@ def main() -> None:
     if obs.trace:
         chrysalis.show_crystallization(obs.trace)
 
-    # Phase 2: Iterated self-evolution
+    # Phase 2: Iterated self-evolution with fixed-point response
     print("  --- Phase 2: Iterated Self-Evolution ---")
-    print("  The system evolves autonomously.")
-    print("  generate -> crystallize -> reflect -> repeat")
-    trajectory = chrysalis.evolve(steps=4)
+    print("  The system evolves, detects stagnation, and breaks out.")
+    print("  generate -> crystallize -> reflect -> perturb -> repeat")
+    trajectory = chrysalis.evolve(steps=6)
     chrysalis.show_trajectory(trajectory)
 
     # Show the last crystallization in detail
@@ -714,11 +794,13 @@ def main() -> None:
     print(f"  Constraints: {total_constraints} ({self_gen} self-generated)")
     print(f"  State: {chrysalis.state}")
     if trajectory.fixed_point:
-        print(f"  Asymptote: step {trajectory.fixed_at} of evolution")
-        print(f"  The system sees its own convergence.")
+        print(f"  First asymptote: step {trajectory.fixed_at}")
+        if trajectory.perturbations:
+            print(f"  Perturbations: {len(trajectory.perturbations)}")
+            print(f"  The system broke out of its fixed point.")
     print()
-    print("  The system iterates its own evolution and detects")
-    print("  when it has reached a fixed point. Axiom 4 made visible.\n")
+    print("  The system detects convergence and responds by expanding")
+    print("  its vocabulary. Axiom 5: contradiction resolved by escalation.\n")
 
 
 if __name__ == "__main__":
