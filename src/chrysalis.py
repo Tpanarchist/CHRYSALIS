@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 1: Visible Crystallization
-The five-layer stack enacts itself. Potential narrows to form.
+CHRYSALIS — Cycle 2: The Feedback Loop
+The system observes its crystallization and constrains itself.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -309,6 +309,71 @@ class Chrysalis:
         print(f"  [PHYSICAL] Result: {_repr(trace.physical_result)}")
         print()
 
+    # --- FEEDBACK: PHYSICAL -> MENTAL ---
+
+    def reflect(self) -> Constraint | None:
+        """Examine the last crystallization and potentially declare a new constraint.
+
+        This is the feedback loop closing: Physical -> Mental. The system
+        observes what it crystallized, notices ambiguity (multiple survivors),
+        and constrains further based on properties of the chosen result.
+
+        The double-headed eagle: retrospection (what happened) produces
+        projection (what should be required next). This is how the system
+        directs its own evolution — not by external declaration but by
+        observing what it produced and demanding more specificity.
+
+        Returns the new constraint if one was generated, or None if the
+        system is already sufficiently constrained.
+        """
+        if not self.history:
+            return None
+
+        last = self.history[-1]
+        if last.trace is None or last.result is None:
+            return None
+
+        survivors = last.trace.astral_survivors
+
+        # If only one or zero survivors, constraints were already sufficient
+        # Nothing to learn — the system fully determined the outcome
+        if len(survivors) <= 1:
+            return None
+
+        # Multiple survivors: the system is under-constrained
+        # Look across ALL survivors for differentiating properties
+        # Then constrain toward greater specificity — more structure, more form
+        dict_survivors = [s for s in survivors if isinstance(s, dict)]
+        if len(dict_survivors) < 2:
+            return None
+
+        # Collect all keys across all surviving dicts
+        all_keys: set[str] = set()
+        for s in dict_survivors:
+            all_keys.update(s.keys())
+
+        existing_names = {c.name for c in self.constraints}
+
+        for key in sorted(all_keys):
+            prop_name = f"requires_{key}"
+            if prop_name in existing_names:
+                continue
+
+            # Is this key present in every survivor?
+            has_key = [s for s in dict_survivors if key in s]
+            if len(has_key) < len(dict_survivors):
+                # This key differentiates survivors — some have it, some don't
+                # Constrain toward the MORE specific: require this property
+                # This enacts Axiom 1: crystallization moves toward greater form
+                return self.declare(
+                    name=prop_name,
+                    test=lambda s, k=key: isinstance(s, dict) and k in s,
+                    layer=Layer.ASTRAL,
+                    source="self-reflection",
+                )
+
+        return None
+
     # --- Layer 0+: SELF-OBSERVATION ---
 
     def _observe(
@@ -348,7 +413,7 @@ class Chrysalis:
 
         print()
         print("=" * 60)
-        print(f"  CHRYSALIS — Cycle {desc['cycle']}")
+        print(f"  CHRYSALIS -- Cycle {desc['cycle']}")
         print(f"  Born: {self._birth}")
         print(f"  Observed: {desc['timestamp']}")
         print("=" * 60)
@@ -358,7 +423,7 @@ class Chrysalis:
         print()
         print("  Layer Census:")
         for layer_name, count in desc["layer_census"].items():
-            bar = "█" * count + "░" * (10 - min(count, 10))
+            bar = "#" * count + "." * (10 - min(count, 10))
             print(f"    {layer_name:10s} [{bar}] {count}")
         print()
         print("  Declared Constraints:")
@@ -394,8 +459,8 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The first breath. The seed germinates and crystallization becomes visible."""
-    print("\n  CHRYSALIS -- Cycle 1: Visible Crystallization\n")
+    """The feedback loop closes. The system reflects and constrains itself."""
+    print("\n  CHRYSALIS -- Cycle 2: The Feedback Loop\n")
 
     chrysalis = Chrysalis()
 
@@ -419,10 +484,6 @@ def main() -> None:
         source="intent",
     )
 
-    # The system sees itself before acting
-    print("  --- Before Crystallization ---")
-    chrysalis.introspect()
-
     # A domain with diverse candidates — most will be eliminated
     domain = [
         None,                    # void — fails existence
@@ -435,36 +496,51 @@ def main() -> None:
         {"alive": True, "aware": True},  # also survives
     ]
 
-    # Crystallize: potential -> form through progressive constraint
-    print("  --- Crystallizing ---")
-    obs = chrysalis.cycle(domain=domain)
-
-    # Show the crystallization layer by layer
-    if obs.trace:
-        chrysalis.show_crystallization(obs.trace)
-
-    # The system sees itself after
-    print("  --- After Crystallization ---")
+    # The system sees itself before acting
+    print("  --- Before Crystallization ---")
     chrysalis.introspect()
 
-    # Second cycle: add a new constraint and re-crystallize
-    # The system becomes more specific — awareness narrows further
-    chrysalis.declare(
-        name="self_aware",
-        test=lambda s: isinstance(s, dict) and s.get("aware") is True,
-        layer=Layer.ASTRAL,
-        source="self-observation",
-    )
+    # First crystallization: potential -> form through progressive constraint
+    print("  --- First Crystallization ---")
+    obs1 = chrysalis.cycle(domain=domain)
+    if obs1.trace:
+        chrysalis.show_crystallization(obs1.trace)
 
-    print("  --- Second Crystallization (deeper) ---")
+    # THE FEEDBACK LOOP: The system reflects on what it crystallized
+    # It notices ambiguity (2 survivors) and generates its own constraint
+    print("  --- Reflection ---")
+    new_constraint = chrysalis.reflect()
+    if new_constraint:
+        print(f"  The system observed ambiguity and declared:")
+        print(f"    [{new_constraint.layer.value:8s}] {new_constraint.name}")
+        print(f"    Source: {new_constraint.source}")
+        print(f"    This constraint was not externally given.")
+        print(f"    The system generated it from its own observation.")
+    else:
+        print("  No ambiguity detected. System is fully constrained.")
+    print()
+
+    # Second crystallization: now with the self-generated constraint
+    print("  --- Second Crystallization (self-directed) ---")
     obs2 = chrysalis.cycle(domain=domain)
     if obs2.trace:
         chrysalis.show_crystallization(obs2.trace)
+
+    # The system sees what it has become
+    print("  --- After Self-Directed Evolution ---")
     chrysalis.introspect()
 
-    print(f"  First crystallization:  {obs.result}")
+    # Summary: the feedback loop in action
+    print(f"  First crystallization:  {obs1.result}")
+    survivors_1 = len(obs1.trace.astral_survivors) if obs1.trace else 0
+    print(f"    ({survivors_1} survivors -- ambiguity remained)")
+    print(f"  Reflection generated:   {new_constraint.name if new_constraint else 'nothing'}")
     print(f"  Second crystallization: {obs2.result}")
-    print(f"  The system lives and knows itself.\n")
+    survivors_2 = len(obs2.trace.astral_survivors) if obs2.trace else 0
+    print(f"    ({survivors_2} survivor -- ambiguity resolved)")
+    print()
+    print("  The loop is closed: observation -> declaration -> crystallization.")
+    print("  The system directs its own evolution.\n")
 
 
 if __name__ == "__main__":

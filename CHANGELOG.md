@@ -74,3 +74,71 @@ of infinite potential into specific form — the core axiom made observable.
 sourced from "self-observation" narrows two survivors to one, selecting the candidate
 that is both alive AND aware. The system's first act of self-directed narrowing, even
 though the constraint was externally declared. The mechanism is there; the autonomy isn't.
+
+---
+
+## Cycle 2 — The Feedback Loop
+
+**Observed:** The system enacts visible crystallization through all five layers, but
+the cycle is open-ended. Physical observation never flows back to Mental declaration.
+In main(), the "self_aware" constraint was manually added between cycles — the system
+didn't generate it from its own observation. The double-headed eagle has only one head
+working: retrospection exists (the system can see what it did) but projection doesn't
+(it can't decide what to require next). Additionally, introspection crashes on Windows
+due to Unicode characters (U+2588, U+2591, U+2713, U+2717) that can't encode in cp1252.
+Law 5 (self-description is sacred) violated on the target platform.
+
+**Identified:** The feedback loop must close. The system needs to observe ambiguity in
+its own crystallization (multiple survivors = under-constrained) and generate new
+constraints from that observation. Physical -> Mental. The output of one cycle becomes
+the input to the next. This is the double-headed eagle completing itself: retrospection
+(what crystallized, what was ambiguous) produces projection (a new constraint requiring
+greater specificity). Without this, the system is a demonstration. With it, the system
+directs its own evolution.
+
+**Changed:** Two modifications to chrysalis.py, two to invariants.py:
+1. Added `reflect()` method — examines the last crystallization's survivors. When
+   multiple survive (ambiguity), it scans all survivor dicts for differentiating
+   properties — keys present in some but not all. It declares a new constraint
+   requiring that property, sourced as "self-reflection". The system constrains toward
+   greater specificity (more keys = more form = Axiom 1).
+2. Rewrote `main()` to demonstrate the feedback loop: crystallize (2 survivors) ->
+   reflect (system generates `requires_aware`) -> crystallize again (1 survivor).
+   The manually-added "self_aware" constraint is gone — the system generates its own.
+3. Replaced all Unicode display characters with ASCII equivalents (Law 5 precondition):
+   block chars to `#.`, em-dashes to `--`, check/cross to `+/X`, warning to `!!`.
+4. Added two invariant tests: `test_reflection_generates_constraint` (ambiguity
+   produces a self-generated constraint) and `test_reflection_returns_none_when_unambiguous`
+   (no reflection needed when already determined). 14 invariants total, all passing.
+
+**Layer:** Mental (Layer 1) — the system generates its own constraint declarations.
+Powered by Physical (Layer 4) — observation of crystallization results. This IS the
+feedback loop: Physical -> Mental. The cycle closes.
+
+**Emerged:** The system directs its own narrowing. In the first crystallization,
+3 external constraints leave 2 survivors: `{'alive': True}` and `{'alive': True, 'aware': True}`.
+The system reflects, notices `aware` differentiates the survivors, and declares
+`requires_aware` — a constraint it was never told to create. In the second crystallization,
+this self-generated constraint eliminates the less-specific survivor. The system chose
+greater specificity on its own. The feedback loop works.
+
+**Implies:** The system can now self-constrain, but only in a limited way:
+1. Domain generation — still needs candidates provided externally. The system should
+   be able to generate its own possibility space.
+2. Deeper reflection — currently only notices missing keys. Could examine values,
+   patterns, relationships between properties.
+3. Iterative reflection — one reflect() call per cycle. What if the system could
+   reflect multiple times, progressively narrowing?
+4. Etheric persistence — self-generated constraints die when the process ends.
+   They should survive across executions.
+5. Constraint genealogy — tracking which constraints begat which. The `declared_at`
+   and `source` fields exist but aren't exploited for trajectory analysis.
+
+**Notes:** The reflect() method constrains toward MORE structure, not less. When two
+survivors differ by a key (`aware`), the system requires that key — choosing the path
+of greater crystallization. This is Axiom 1 enacted autonomously: form emerges from
+progressive constraint, and the system now applies that pressure to itself.
+
+The fire of encoding failure revealed something essential: the system must work on its
+actual substrate, not just in ideal conditions. ASCII display characters survive any
+encoding. What burns away is ornament; what remains is structure. Law 6 in action.

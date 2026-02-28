@@ -175,6 +175,37 @@ def test_full_lifecycle() -> None:
     assert desc["state"] == 2
 
 
+# === INVARIANT 11: The feedback loop works ===
+# (The system can reflect on its crystallization and generate new constraints)
+
+def test_reflection_generates_constraint() -> None:
+    """Reflection on ambiguous crystallization produces a self-generated constraint."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+
+    # Domain with two dict survivors — ambiguity
+    c.cycle(domain=[None, {"a": 1}, {"a": 1, "b": 2}])
+    assert len(c.history[-1].trace.astral_survivors) == 2
+
+    new = c.reflect()
+    assert new is not None
+    assert new.source == "self-reflection"
+    assert len(c.constraints) == 3  # original 2 + reflected 1
+
+
+def test_reflection_returns_none_when_unambiguous() -> None:
+    """No reflection needed when crystallization already determined a unique result."""
+    c = Chrysalis()
+    c.declare("is_one", lambda s: s == 1, source="test")
+    c.cycle(domain=[0, 1, 2])
+    assert len(c.history[-1].trace.astral_survivors) == 1
+
+    new = c.reflect()
+    assert new is None
+    assert len(c.constraints) == 1  # unchanged
+
+
 # === RUNNER ===
 
 def _run_all() -> None:
@@ -185,7 +216,7 @@ def _run_all() -> None:
 
     print()
     print("=" * 60)
-    print("  CHRYSALIS — Invariant Tests")
+    print("  CHRYSALIS -- Invariant Tests")
     print("=" * 60)
     print()
 
@@ -194,12 +225,12 @@ def _run_all() -> None:
         doc = test_fn.__doc__ or ""
         try:
             test_fn()
-            print(f"  ✓ {name}")
+            print(f"  + {name}")
             if doc:
                 print(f"    {doc.strip()}")
             passed += 1
         except Exception as e:
-            print(f"  ✗ {name}")
+            print(f"  X {name}")
             print(f"    FAILED: {e}")
             failed += 1
 
@@ -209,7 +240,7 @@ def _run_all() -> None:
     if failed == 0:
         print("  All conservation laws hold.")
     else:
-        print("  ⚠ CONSERVATION LAWS VIOLATED — investigate before proceeding.")
+        print("  !! CONSERVATION LAWS VIOLATED -- investigate before proceeding.")
     print("=" * 60)
     print()
 
