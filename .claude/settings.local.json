@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python src/chrysalis.py)",
+      "Bash(where python)",
+      "Bash(py -0)",
+      "Bash(py --list)",
+      "Bash(py -3.12 src/chrysalis.py)",
+      "Bash(PYTHONIOENCODING=utf-8 py -3.12 src/chrysalis.py)",
+      "Bash(PYTHONIOENCODING=utf-8 py -3.12 tests/invariants.py)"
+    ]
+  }
+}
