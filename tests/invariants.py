@@ -351,6 +351,80 @@ def test_evolution_perturbation_breaks_fixed_point() -> None:
     assert trajectory.domain_sizes[-1] > trajectory.domain_sizes[0]
 
 
+# === INVARIANT 21: Etheric binding persists state ===
+# (Layer 3 — the blueprint survives between executions)
+
+def test_etheric_binding_persists() -> None:
+    """State persists to the etheric substrate after crystallization."""
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "test_etheric.json"
+        c = Chrysalis()
+        c.bind_etheric(path)
+        c.declare("exists", lambda s: s is not None, source="test")
+        c.cycle(domain=[None, {"a": 1}])
+
+        assert path.exists()
+        import json
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["state"] == {"a": 1}
+        assert data["cycle_count"] == 1
+
+
+# === INVARIANT 22: Etheric state loads across instances ===
+# (Layer 3 — new life inherits the old)
+
+def test_etheric_persistence_across_instances() -> None:
+    """A new Chrysalis loads state from the same etheric substrate."""
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "test_etheric.json"
+
+        # First life
+        c1 = Chrysalis()
+        c1.bind_etheric(path)
+        c1.declare("exists", lambda s: s is not None, source="test")
+        c1.cycle(domain=[None, {"x": 42}])
+
+        # Second life — new instance, same substrate
+        c2 = Chrysalis()
+        c2.bind_etheric(path)
+        assert c2.state == {"x": 42}
+        assert c2.cycle_count == 1
+
+
+# === INVARIANT 23: Vocabulary expansions persist ===
+# (Perturbation vocabulary survives process death)
+
+def test_etheric_vocabulary_persists() -> None:
+    """Vocabulary expansions from perturbation survive across lives."""
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "test_etheric.json"
+
+        # First life — create state and perturb
+        c1 = Chrysalis()
+        c1.bind_etheric(path)
+        c1.declare("exists", lambda s: s is not None, source="test")
+        c1.cycle(domain=[None, {"a": True, "b": True}])
+        c1._perturb()
+        c1._save()  # persist the perturbation
+
+        assert len(c1._vocabulary_expansions) > 0
+        original_expansions = dict(c1._vocabulary_expansions)
+
+        # Second life — vocabulary should be loaded
+        c2 = Chrysalis()
+        c2.bind_etheric(path)
+        assert c2._vocabulary_expansions == original_expansions
+
+
 # === RUNNER ===
 
 def _run_all() -> None:

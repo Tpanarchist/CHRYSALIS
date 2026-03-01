@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 5: Fixed-Point Response
-The system responds to its own stagnation.
+CHRYSALIS — Cycle 6: Etheric Persistence
+The system's state survives process death.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -11,9 +11,11 @@ Python 3.12 | No external dependencies
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import StrEnum
+from pathlib import Path
 from typing import Any, Callable, Self
 
 
@@ -180,6 +182,7 @@ class Chrysalis:
         self.cycle_count: int = 0
         self._birth = datetime.now(timezone.utc).isoformat()
         self._vocabulary_expansions: dict[str, Any] = {}  # keys from perturbation
+        self._etheric_path: Path | None = None  # persistent substrate
 
     # --- Layer 0: VOID — Domain Generation ---
 
@@ -310,15 +313,72 @@ class Chrysalis:
     # --- Layer 3: ETHERIC — Binding ---
 
     def _bind(self, result: Any) -> Any:
-        """Bind a resolved form to the system's state.
+        """Bind a resolved form to the system's state and persist.
 
         The etheric operation: the abstract result gets anchored to the
-        system's persistent substrate. Currently minimal — just state
-        assignment. Will evolve toward real resource binding.
+        system's persistent substrate. State is updated and, if an etheric
+        path is bound, written to the physical medium. Each crystallization
+        leaves a trace that survives process death.
         """
         if result is not None:
             self.state = result
+        self._save()
         return self.state
+
+    def bind_etheric(self, path: Path) -> Self:
+        """Bind to a persistent substrate — the etheric layer.
+
+        The etheric is the blueprint that persists between executions.
+        Without it, the system's state dies when the process ends.
+        With it, each execution is a new life built on the last.
+
+        This is Layer 3 becoming real: resource binding means mapping
+        the abstract solution to a physical persistence medium. The
+        resolved form incarnates into something that outlasts its resolver.
+        """
+        self._etheric_path = path
+        self._load()
+        return self
+
+    def _load(self) -> None:
+        """Load persistent state from the etheric substrate.
+
+        The system resurrects from its persistent medium. State, cycle
+        count, and vocabulary expansions survive process death. Constraints
+        must be re-declared (lambdas can't persist), but the system's
+        memory and vocabulary carry forward. The constraints will be
+        re-derived through reflection on the persistent state.
+        """
+        if self._etheric_path is None or not self._etheric_path.exists():
+            return
+        try:
+            data = json.loads(self._etheric_path.read_text(encoding="utf-8"))
+            self.state = data.get("state")
+            self.cycle_count = data.get("cycle_count", 0)
+            self._vocabulary_expansions = data.get("vocabulary_expansions", {})
+        except (json.JSONDecodeError, OSError):
+            pass  # corrupted substrate — start fresh
+
+    def _save(self) -> None:
+        """Persist state to the etheric substrate.
+
+        Each crystallization writes its result to the persistent medium.
+        If the process dies, the last crystallized state survives. The
+        etheric layer is the bridge between execution and memory.
+        """
+        if self._etheric_path is None:
+            return
+        data = {
+            "state": self.state,
+            "cycle_count": self.cycle_count,
+            "vocabulary_expansions": self._vocabulary_expansions,
+            "last_saved": datetime.now(timezone.utc).isoformat(),
+        }
+        self._etheric_path.parent.mkdir(parents=True, exist_ok=True)
+        self._etheric_path.write_text(
+            json.dumps(data, indent=2, default=str),
+            encoding="utf-8",
+        )
 
     # --- Layer 4: PHYSICAL — Execution ---
 
@@ -408,6 +468,8 @@ class Chrysalis:
 
         # Etheric
         print(f"  [ETHERIC]  Bound to state: {_repr(trace.etheric_binding)}")
+        if self._etheric_path:
+            print(f"             Persisted to: {self._etheric_path.name}")
         print()
 
         # Physical
@@ -731,12 +793,32 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The system responds to its own stagnation."""
-    print("\n  CHRYSALIS -- Cycle 5: Fixed-Point Response\n")
+    """The system persists across lives."""
+    print("\n  CHRYSALIS -- Cycle 6: Etheric Persistence\n")
+
+    # The etheric substrate — persistent medium for the system's state
+    etheric_path = Path(__file__).resolve().parent.parent / "state" / "etheric.json"
 
     chrysalis = Chrysalis()
+    chrysalis.bind_etheric(etheric_path)
 
-    # External constraints -- the initial declarations
+    is_continuation = chrysalis.cycle_count > 0
+
+    if is_continuation:
+        print(f"  Etheric substrate found: {etheric_path.name}")
+        print(f"  Resuming from cycle {chrysalis.cycle_count}")
+        print(f"  Previous state: {chrysalis.state}")
+        carried = list(chrysalis._vocabulary_expansions.keys())
+        if carried:
+            print(f"  Vocabulary carried over: {carried}")
+        print()
+    else:
+        print(f"  No etheric substrate. First life.")
+        print(f"  Binding to: {etheric_path}")
+        print()
+
+    # External constraints — re-declared each life
+    # (lambdas cannot be serialized; the constraints ARE the code)
     chrysalis.declare(
         name="existence",
         test=lambda s: s is not None,
@@ -756,24 +838,29 @@ def main() -> None:
         source="intent",
     )
 
-    # Phase 1: Seed with one external cycle to provide initial vocabulary
-    print("  --- Phase 1: Seeding ---")
-    seed_domain = [
-        None,
-        {"dead": True},
-        {"alive": False},
-        {"alive": True},
-        {"alive": True, "aware": True},
-    ]
-    obs = chrysalis.cycle(domain=seed_domain)
-    if obs.trace:
-        chrysalis.show_crystallization(obs.trace)
+    if not is_continuation:
+        # Phase 1: Seed with one external cycle to provide initial vocabulary
+        print("  --- Phase 1: Seeding ---")
+        seed_domain = [
+            None,
+            {"dead": True},
+            {"alive": False},
+            {"alive": True},
+            {"alive": True, "aware": True},
+        ]
+        obs = chrysalis.cycle(domain=seed_domain)
+        if obs.trace:
+            chrysalis.show_crystallization(obs.trace)
 
-    # Phase 2: Iterated self-evolution with fixed-point response
-    print("  --- Phase 2: Iterated Self-Evolution ---")
-    print("  The system evolves, detects stagnation, and breaks out.")
-    print("  generate -> crystallize -> reflect -> perturb -> repeat")
-    trajectory = chrysalis.evolve(steps=6)
+    # Phase 2 (or continuation): Iterated self-evolution
+    steps = 4 if is_continuation else 6
+    phase = "Continuation" if is_continuation else "Phase 2"
+    print(f"  --- {phase}: Iterated Self-Evolution ({steps} steps) ---")
+    if not is_continuation:
+        print("  generate -> crystallize -> reflect -> perturb -> repeat")
+    else:
+        print("  Evolving from persisted state...")
+    trajectory = chrysalis.evolve(steps=steps)
     chrysalis.show_trajectory(trajectory)
 
     # Show the last crystallization in detail
@@ -793,14 +880,18 @@ def main() -> None:
     print(f"  Total cycles: {chrysalis.cycle_count}")
     print(f"  Constraints: {total_constraints} ({self_gen} self-generated)")
     print(f"  State: {chrysalis.state}")
+    print(f"  Persisted to: {etheric_path.name}")
     if trajectory.fixed_point:
         print(f"  First asymptote: step {trajectory.fixed_at}")
         if trajectory.perturbations:
             print(f"  Perturbations: {len(trajectory.perturbations)}")
-            print(f"  The system broke out of its fixed point.")
+    if is_continuation:
+        print(f"  This is a continuation. The system remembers.")
+    else:
+        print(f"  First life recorded. Run again to see persistence.")
     print()
-    print("  The system detects convergence and responds by expanding")
-    print("  its vocabulary. Axiom 5: contradiction resolved by escalation.\n")
+    print("  The etheric layer bridges execution and memory.")
+    print("  State survives process death. Each life compounds.\n")
 
 
 if __name__ == "__main__":

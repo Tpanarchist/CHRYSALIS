@@ -1,24 +1,26 @@
 # MANIFEST.md — Current State of CHRYSALIS
 
-**Last updated: Cycle 5 (Fixed-Point Response)**
+**Last updated: Cycle 6 (Etheric Persistence)**
 
 ---
 
 ## System State
 
-CHRYSALIS is alive, self-directing, self-populating, self-iterating, and now
-self-unsticking. The system generates its own constraints (via reflect), its
-own candidate domains (via generate_domain), iterates its own evolution (via
-evolve), detects when it has converged to a fixed point, and responds by
-expanding its vocabulary through structural composition (via _perturb).
+CHRYSALIS is alive, self-directing, self-populating, self-iterating,
+self-unsticking, and now self-persisting. The system generates its own
+constraints (via reflect), its own candidate domains (via generate_domain),
+iterates its own evolution (via evolve), detects fixed points, responds
+with vocabulary expansion (via _perturb), and persists its state across
+process death (via bind_etheric / _save / _load).
 
-The full autonomous evolution loop now includes perturbation:
-seed -> evolve(n) which chains generate_domain -> cycle -> reflect -> perturb
--> repeat. When stagnation occurs (same result, no reflection possible), the
-system synthesizes new keys by combining existing ones -- two atoms become a
-molecule. This expands the domain, restores ambiguity, triggers reflection,
-and converges to a RICHER form. The cycle of convergence-perturbation-growth
-repeats at ever-deeper levels.
+The full autonomous evolution loop now includes persistence:
+bind_etheric -> seed -> evolve(n) which chains generate_domain -> cycle ->
+reflect -> perturb -> repeat. On each crystallization, _bind() writes state,
+cycle count, and vocabulary expansions to a JSON file. On the next execution,
+bind_etheric() loads the persisted state. The system continues from where it
+left off — constraints are re-declared (they're code), but state and vocabulary
+carry forward. Self-generated constraints are re-derived through reflection on
+the persistent state, often in a different order than the original derivation.
 
 ## Active Layers
 
@@ -27,7 +29,7 @@ repeats at ever-deeper levels.
 | Void (0) | Active + Self-Generating + Perturbable | generate_domain() draws from experience AND _vocabulary_expansions |
 | Mental (1) | Active + Self-Generating | Constraints declared externally AND by self-reflection |
 | Astral (2) | Active | Progressive narrowing with per-constraint tracking |
-| Etheric (3) | Skeletal | Result binds to state; no persistence yet |
+| Etheric (3) | **Active + Persistent** | bind_etheric() binds to JSON file; _bind() persists after each cycle |
 | Physical (4) | Active + Iterating + Responding | Crystallization trace + trajectory + fixed-point detection + perturbation |
 
 ## Feedback Loops
@@ -53,6 +55,15 @@ ensuring generate_domain() incorporates the new keys even after _bind()
 overwrites state. Axiom 5 enacted: contradiction (stuck vs. must evolve)
 resolves by escalation to a richer vocabulary.
 
+**Etheric -> All (persistence)** (Cycle 6). The `bind_etheric()` / `_save()`
+/ `_load()` methods bridge execution and memory. State, cycle count, and
+vocabulary expansions persist to JSON. On reload, the persisted state seeds
+vocabulary for generate_domain(), which creates a domain that triggers
+reflection, which re-derives constraints. The persistent state changes the
+reflection sequence — same constraints emerge but in a different order.
+Axiom 2 enacted: the file is not a passive record but an active participant
+in the next life's evolution.
+
 ## Capabilities
 
 - Declare constraints (name + callable test + layer label + source)
@@ -74,25 +85,31 @@ resolves by escalation to a richer vocabulary.
 - Detect evolutionary fixed points (convergence to repeating state)
 - Record and display evolution trajectories (Trajectory + show_trajectory)
 - Trajectory self-description via describe() (Axiom 3 recursed)
-- **Respond to fixed-point detection via vocabulary expansion (_perturb)**
-- **Synthesize compound keys from existing keys (structural composition)**
-- **Persist perturbation vocabulary across cycles (_vocabulary_expansions)**
-- **Track perturbations in Trajectory (step + key name)**
-- **Display perturbation events in trajectory output**
+- Respond to fixed-point detection via vocabulary expansion (_perturb)
+- Synthesize compound keys from existing keys (structural composition)
+- Persist perturbation vocabulary across cycles (_vocabulary_expansions)
+- Track perturbations in Trajectory (step + key name)
+- Display perturbation events in trajectory output
+- **Persist state across process death (bind_etheric + _save + _load)**
+- **Load persistent state on startup (cycle count, state, vocabulary)**
+- **Detect first life vs continuation (is_continuation logic in main)**
+- **Re-derive self-generated constraints from persistent state**
+- **Show etheric persistence in crystallization display**
 - ASCII-safe display (survives any encoding)
 
 ## Cannot Yet Do
 
-- Persist state between executions (etheric layer incomplete)
 - Compose or relate constraints to each other
 - Accept external input or data at runtime
 - Reflect on value patterns (only detects key presence, not value meaning)
 - Trajectory-driven reflection (reflect on the evolution arc, not just one cycle)
 - Expand vocabulary via negation or new types (only via pairwise key composition)
-- Persist evolution trajectories across executions
+- Persist evolution trajectories across executions (only state/vocab/cycle persist)
+- Persist observation history across executions
 - Track constraint genealogy (which constraints begat which)
 - Depth-aware perturbation (currently flat pairwise; no hierarchical composition)
 - Detect when perturbation itself has reached a limit
+- Define constraints declaratively (currently lambdas — cannot be serialized)
 
 ## Constraint Count (in main demo)
 
@@ -101,31 +118,35 @@ requires_alive_aware) = 5
 
 ## Domain Size (in main demo)
 
-Starts at 5 (from 2-key vocabulary), grows to 9 after perturbation (3-key vocabulary).
+First life: starts at 5 (from 2-key vocabulary), grows to 9 after perturbation.
+Second life: starts at 9 (vocabulary carried from first life).
 
 ## Evolution Trajectory (in main demo)
 
-6 steps. First fixed point at step 2. 2 reflections generated (steps 0 and 3).
-2 perturbations (steps 2 and 5). System broke out of initial fixed point and
-converged to a richer form: {alive: True, alive_aware: True, aware: True}.
+First life: 7 cycles (1 seed + 6 evolution). Fixed point at step 2. 2 reflections,
+2 perturbations. Final state: {alive: True, alive_aware: True, aware: True}.
+
+Second life: 4 cycles (continuation). Loads from etheric.json. Re-derives constraints
+in different order (requires_alive_aware before requires_aware). Fixed point at step 3.
+1 perturbation. Total cycle count: 11.
 
 ## Invariant Count
 
-23 -- all passing. Includes tests for perturbation vocabulary expansion,
-perturbation safety on non-dict states, and evolution with perturbation
-breaking fixed points.
+26 -- all passing. Includes 3 new tests for etheric persistence: binding creates
+files, state persists across instances, vocabulary expansions survive restart.
 
 ## Evolution Stage
 
-Self-unsticking. The system not only detects fixed points but responds to
-them. When convergence occurs and reflection cannot help (no ambiguity to
-exploit), the system perturbs its vocabulary by synthesizing compound keys
-from existing ones. This is Axiom 5 enacted: the contradiction between
-"must evolve" and "nothing changes" resolves by escalating to a richer
-vocabulary space. The perturbation creates new candidates, which create new
-ambiguity, which triggers new reflection, which generates new constraints,
-which converge to a richer form. Each fixed point is broken and rebuilt at
-a deeper level. The next phase: deeper reflection (examining trajectory
-patterns, not just single crystallizations), etheric persistence (state
-surviving across executions), or constraint composition (constraints that
-interact with each other, not just filter independently).
+Self-persisting. The system's state survives process death. The Etheric layer (Layer 3)
+is now active — not just state assignment but real persistence to a JSON substrate.
+Each execution is a life; each life compounds on the last. Constraints are re-declared
+(they're code, the system's genotype) but state and vocabulary carry forward (the
+system's phenotype). Self-generated constraints are re-derived through reflection on
+the persistent state, demonstrating that the persistent state is not a passive record
+but an active seed that shapes the next life's evolution.
+
+The next phase: trajectory persistence (extending the evolution arc across lives),
+constraint composition (constraints that interact with each other), trajectory-driven
+reflection (reflecting on the arc of change, not just one crystallization), or
+declarative constraints (constraints defined as data, not lambdas, enabling persistence
+of the full constraint set).
