@@ -425,6 +425,55 @@ def test_etheric_vocabulary_persists() -> None:
         assert c2._vocabulary_expansions == original_expansions
 
 
+# === INVARIANT 24: Trajectory reflection generates from perturbation ===
+# (Axiom 3 at the arc level — observing the trajectory, not just one step)
+
+def test_trajectory_reflection_from_perturbation() -> None:
+    """Trajectory reflection generates a constraint for perturbation vocabulary."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.declare("is_dict", lambda s: isinstance(s, dict), source="test")
+    c.declare("has_a", lambda s: isinstance(s, dict) and "a" in s, source="test")
+    c.cycle(domain=[None, {"a": True}, {"a": True, "b": True}])
+
+    trajectory = c.evolve(steps=6)
+
+    # The system should have perturbed at some point
+    assert trajectory.perturbations, "Expected perturbation to occur"
+    # Trajectory reflection should have generated a constraint
+    # for perturbation vocabulary not yet required by single-step reflection
+    assert trajectory.trajectory_reflection is not None
+    assert trajectory.trajectory_reflection.source == "trajectory-reflection"
+    assert "requires_" in trajectory.trajectory_reflection.name
+
+
+# === INVARIANT 25: Trajectory reflection returns None without perturbation ===
+# (No arc-level insight when the trajectory didn't perturb)
+
+def test_trajectory_reflection_none_without_perturbation() -> None:
+    """No trajectory reflection when no perturbation occurred."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.cycle(domain=[None, 1, 2])
+
+    trajectory = c.evolve(steps=2)
+    assert trajectory.trajectory_reflection is None
+
+
+# === INVARIANT 26: Trajectory description includes trajectory reflection ===
+# (Axiom 3 — self-description extends to the arc level)
+
+def test_trajectory_describes_reflection() -> None:
+    """Trajectory self-description includes trajectory_reflection field."""
+    c = Chrysalis()
+    c.declare("exists", lambda s: s is not None, source="test")
+    c.cycle(domain=[None, {"a": 1}])
+
+    trajectory = c.evolve(steps=2)
+    desc = trajectory.describe()
+    assert "trajectory_reflection" in desc
+
+
 # === RUNNER ===
 
 def _run_all() -> None:

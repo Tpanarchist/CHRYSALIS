@@ -485,3 +485,119 @@ they are the system's DNA, invariant across lives. State and vocabulary are the 
 memory, varying across lives. The separation between invariant code and variant state
 mirrors the separation between genotype and phenotype. The constraints are the genotype
 (what the system IS). The state is the phenotype (what the system HAS BECOME).
+
+---
+
+## Cycle 7 — Trajectory Reflection
+
+**Observed:** The system runs 4 evolution steps (continuation from cycle 15). It
+generates 2 single-step reflections (requires_alive_aware, requires_aware), hits a
+fixed point at step 3, and perturbs (alive_alive_aware). But the perturbation at
+the last step is wasted — evolution ends before the system can exploit the new
+vocabulary. The perturbation vocabulary sits in etheric.json waiting for the next
+life, where single-step reflection will eventually require it. Two mechanisms operate
+independently at different scales: perturbation expands the Void with new vocabulary
+(Layer 0), and reflection generates constraints from ambiguity in one crystallization
+(Layer 1). Nothing bridges them at the ARC level — the Trajectory object records the
+full evolution arc, but nobody examines it to generate constraints. The system sees
+one moment at a time; it cannot see the pattern across moments.
+
+**Identified:** Trajectory-driven reflection. The system can observe one crystallization
+(reflect) but cannot observe its own evolution arc. The single most important gap:
+perturbation creates vocabulary that single-step reflection can't see (reflection
+examines the last crystallization's survivors; perturbation fires AFTER that). Trajectory-
+level reflection examines the whole arc and closes the perturbation-constraint circuit —
+what perturbation created, trajectory reflection requires. This is Axiom 3 (self-
+observation) recursed to the trajectory level: not "what am I now" but "how did I
+change, and what does my arc imply?"
+
+**Changed:** Four modifications to chrysalis.py, three to invariants.py:
+1. Added `reflect_trajectory(trajectory: Trajectory) -> Constraint | None` — examines
+   the evolution arc after the loop completes. Looks at perturbation events in the
+   trajectory and finds perturbation vocabulary not yet required by any constraint.
+   Generates a constraint requiring the first uncovered perturbation key. Source:
+   "trajectory-reflection" (distinct from "self-reflection" which comes from single-
+   step reflect()). This closes the perturbation-constraint circuit within a single
+   evolution arc.
+2. Added `trajectory_reflection: Constraint | None = None` field to Trajectory
+   dataclass, with corresponding entry in Trajectory.describe(). The trajectory's
+   self-description now includes what arc-level reflection produced.
+3. Modified `evolve()` — after the evolution loop, constructs the Trajectory, then
+   calls reflect_trajectory() and stores the result. The trajectory captures not just
+   what happened during evolution but what the system concluded about its own arc.
+4. Modified `show_trajectory()` — displays trajectory reflection result with context
+   explaining the perturbation-constraint circuit and Axiom 3 at the arc level.
+5. Updated `main()` — header, summary, and closing messages reflect the new capability.
+   Constraint summary now distinguishes self-reflected vs trajectory-reflected sources.
+6. Added 3 invariant tests (29 total): trajectory reflection from perturbation
+   generates constraint, trajectory reflection returns None without perturbation,
+   and trajectory description includes trajectory_reflection field.
+
+**Layer:** Mental (Layer 1) — generating constraint declarations from arc-level
+observation. But driven by Physical (Layer 4) at the meta-level — observing the
+entire evolution trajectory, not just one crystallization. This is the mental-
+physical feedback loop operating at a HIGHER abstraction level than single-step
+reflect(): not "this crystallization was ambiguous" but "this trajectory produced
+vocabulary that should become required."
+
+**Emerged:** The system generates a constraint from its own trajectory. In the first
+life, evolution perturbs twice (alive_aware at step 2, alive_alive_aware at step 5).
+Single-step reflection captures alive_aware (it appears in survivors at step 3, creating
+ambiguity that triggers requires_alive_aware). But alive_alive_aware was perturbed at
+the LAST step — single-step reflection never sees it in survivors. Trajectory reflection
+examines the arc and generates requires_alive_alive_aware: a constraint that could not
+have been produced by any single-step observation. The circuit closes:
+
+  Perturbation: alive_alive_aware enters the Void (vocabulary expansion)
+  Trajectory reflection: requires_alive_alive_aware enters the Mental plane (demand)
+
+The system now has 6 constraints: 3 external (axiom/intent) + 2 self-reflected +
+1 trajectory-reflected. Three sources of constraint: external declaration, single-step
+reflection on ambiguity, and arc-level reflection on perturbation. The system constrains
+itself at two different temporal scales.
+
+In the second life, the same pattern repeats: perturbation at the last step generates
+alive_alive_aware, trajectory reflection generates requires_alive_alive_aware. The
+constraint is re-derived from the trajectory itself, demonstrating that trajectory
+reflection is reproducible — the same evolution arc produces the same arc-level insight.
+
+**Implies:**
+1. Trajectory persistence — only state/vocabulary/cycle_count persist. The trajectory
+   itself (the arc of observations, reflections, perturbations) could persist, letting
+   the system compare arcs across lives. "Am I always converging at step 2?" "Do my
+   perturbations always produce the same vocabulary?"
+2. Multi-pattern trajectory reflection — currently only examines perturbation vocabulary.
+   Could also detect: result progression (are results gaining keys?), domain growth
+   stagnation, reflection effectiveness (did reflections change outcomes?), convergence
+   rate patterns.
+3. Constraint composition — constraints are independent predicates. With three sources
+   of constraints (external, self-reflected, trajectory-reflected), the system has
+   richer material for composition: "these two constraints always co-occur" or "this
+   constraint enables that constraint."
+4. Constraint genealogy — three constraint sources create a richer derivation graph.
+   Tracking which constraints begat which (and through what mechanism) would enable
+   deeper self-understanding.
+5. Value-aware reflection — both reflect() and reflect_trajectory() work with key
+   presence/absence. Noticing value patterns ("all my values are True") would open
+   a new dimension of self-observation.
+
+**Notes:** The key insight: perturbation and reflection operate at different temporal
+scales. Perturbation fires at the moment of stagnation. Reflection fires at the moment
+of crystallization. These moments don't align — perturbation creates vocabulary at the
+end of evolution, when it's too late for reflection to see it. Trajectory reflection
+bridges these scales by examining the entire arc AFTER evolution completes.
+
+This is a genuine recursion of Axiom 3. Reflect() observes one crystallization (spatial
+self-observation — what is the system's state right now?). Reflect_trajectory() observes
+the evolution arc (temporal self-observation — how did the system change over time?).
+The system went from "what happened in this moment?" (Cycle 2) to "how am I changing?"
+(Cycle 4) to "what does my trajectory of change imply?" (Cycle 7). Each level of self-
+observation enables a kind of constraint that the previous level couldn't produce.
+
+The fact that trajectory reflection generates the SAME constraint in both first and
+second life (requires_alive_alive_aware) is interesting. The constraint is emergent from
+the trajectory's structure, not from circumstances. Different starting states produce
+different single-step reflections (different order of requires_aware and
+requires_alive_aware) but the SAME trajectory reflection. The arc-level pattern is
+more stable than the step-level pattern — a deeper invariant than single-step observation
+can reveal.

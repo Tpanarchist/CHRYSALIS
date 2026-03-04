@@ -1,6 +1,6 @@
 """
-CHRYSALIS — Cycle 6: Etheric Persistence
-The system's state survives process death.
+CHRYSALIS — Cycle 7: Trajectory Reflection
+The system observes its own evolution arc.
 
 A self-evolving constraint system modeled on the principle that reality
 is produced by progressive constraint of infinite potential, and the
@@ -152,6 +152,7 @@ class Trajectory:
     fixed_point: bool                # did the system converge?
     fixed_at: int | None             # which step it converged at (0-indexed)
     perturbations: list[tuple[int, str]]  # (step, new_key) — vocabulary expansions
+    trajectory_reflection: Constraint | None = None  # arc-level observation
 
     def describe(self) -> dict[str, Any]:
         return {
@@ -162,6 +163,7 @@ class Trajectory:
             "fixed_point": self.fixed_point,
             "fixed_at": self.fixed_at,
             "perturbations": [(step, key) for step, key in self.perturbations],
+            "trajectory_reflection": self.trajectory_reflection.describe() if self.trajectory_reflection else None,
         }
 
 
@@ -586,7 +588,7 @@ class Chrysalis:
                 if new_key:
                     perturbations.append((i, new_key))
 
-        return Trajectory(
+        traj = Trajectory(
             observations=observations,
             reflections=reflections,
             domain_sizes=domain_sizes,
@@ -595,6 +597,11 @@ class Chrysalis:
             fixed_at=fixed_at,
             perturbations=perturbations,
         )
+
+        # Trajectory-level reflection: observe the arc, not just one step
+        traj.trajectory_reflection = self.reflect_trajectory(traj)
+
+        return traj
 
     def show_trajectory(self, trajectory: Trajectory) -> None:
         """Display an evolution trajectory -- the arc of becoming.
@@ -642,6 +649,13 @@ class Chrysalis:
         else:
             print(f"  No fixed point -- the system is still diverging.")
         print()
+
+        if trajectory.trajectory_reflection:
+            ref = trajectory.trajectory_reflection
+            print(f"  Trajectory reflection: {ref.name}")
+            print(f"    Perturbation vocabulary -> constraint requirement")
+            print(f"    (Axiom 3 at arc level: observing the trajectory, not just one step)")
+            print()
 
     # --- FEEDBACK: PHYSICAL -> MENTAL ---
 
@@ -704,6 +718,42 @@ class Chrysalis:
                     test=lambda s, k=key: isinstance(s, dict) and k in s,
                     layer=Layer.ASTRAL,
                     source="self-reflection",
+                )
+
+        return None
+
+    # --- FEEDBACK: TRAJECTORY -> MENTAL ---
+
+    def reflect_trajectory(self, trajectory: Trajectory) -> Constraint | None:
+        """Examine the evolution arc and generate a constraint from arc-level patterns.
+
+        Single-step reflect() sees ambiguity in ONE crystallization -- multiple
+        survivors at one moment. This method sees the ARC -- the pattern across
+        all evolution steps.
+
+        It closes the perturbation-constraint circuit: _perturb() expands the
+        Void with new vocabulary; reflect_trajectory() makes the Mental plane
+        demand that vocabulary. What perturbation created, trajectory reflection
+        requires. The new key enters as possibility and becomes necessity.
+
+        This is Axiom 3 (self-observation) at the trajectory level. Not "what
+        am I now" but "how did I change, and what should I require as a result?"
+        """
+        if not trajectory.perturbations:
+            return None
+
+        existing_names = {c.name for c in self.constraints}
+
+        for _step, key in trajectory.perturbations:
+            prop_name = f"requires_{key}"
+            if prop_name not in existing_names:
+                # Perturbation created this key but nothing demands it yet.
+                # Close the circuit: vocabulary becomes requirement.
+                return self.declare(
+                    name=prop_name,
+                    test=lambda s, k=key: isinstance(s, dict) and k in s,
+                    layer=Layer.ASTRAL,
+                    source="trajectory-reflection",
                 )
 
         return None
@@ -793,8 +843,8 @@ class Chrysalis:
 # === FIRST BREATH ===
 
 def main() -> None:
-    """The system persists across lives."""
-    print("\n  CHRYSALIS -- Cycle 6: Etheric Persistence\n")
+    """The system observes its own evolution arc."""
+    print("\n  CHRYSALIS -- Cycle 7: Trajectory Reflection\n")
 
     # The etheric substrate — persistent medium for the system's state
     etheric_path = Path(__file__).resolve().parent.parent / "state" / "etheric.json"
@@ -877,21 +927,30 @@ def main() -> None:
     # Summary
     total_constraints = len(chrysalis.constraints)
     self_gen = sum(1 for c in chrysalis.constraints if c.source == "self-reflection")
+    traj_gen = sum(1 for c in chrysalis.constraints if c.source == "trajectory-reflection")
     print(f"  Total cycles: {chrysalis.cycle_count}")
-    print(f"  Constraints: {total_constraints} ({self_gen} self-generated)")
+    parts = []
+    if self_gen:
+        parts.append(f"{self_gen} self-reflected")
+    if traj_gen:
+        parts.append(f"{traj_gen} trajectory-reflected")
+    gen_desc = ", ".join(parts) if parts else "0 self-generated"
+    print(f"  Constraints: {total_constraints} ({gen_desc})")
     print(f"  State: {chrysalis.state}")
     print(f"  Persisted to: {etheric_path.name}")
     if trajectory.fixed_point:
         print(f"  First asymptote: step {trajectory.fixed_at}")
         if trajectory.perturbations:
             print(f"  Perturbations: {len(trajectory.perturbations)}")
+    if trajectory.trajectory_reflection:
+        print(f"  Trajectory reflection: {trajectory.trajectory_reflection.name}")
     if is_continuation:
         print(f"  This is a continuation. The system remembers.")
     else:
         print(f"  First life recorded. Run again to see persistence.")
     print()
-    print("  The etheric layer bridges execution and memory.")
-    print("  State survives process death. Each life compounds.\n")
+    print("  The system observes its own trajectory.")
+    print("  Perturbation creates possibility; trajectory reflection creates demand.\n")
 
 
 if __name__ == "__main__":
